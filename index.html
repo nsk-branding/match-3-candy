@@ -3,67 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Candy Blast Mobile</title>
-    <!-- FontAwesome & Google Fonts -->
+    <title>Candy Blast para Mamá</title>
+    <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
     <!-- Phaser 3 CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- PANTALLA DEL MAPA -->
+    <!-- PANTALLA 1: MAPA DE INICIO -->
     <div id="map-screen" class="screen map-wrapper active">
-        <h1 class="map-title"><i class="fa-solid fa-map-location-dot"></i> NIVELES</h1>
-        <p id="status-text" class="subtitle"></p>
+        <div class="map-header">
+            <h1 class="map-title"><i class="fa-solid fa-crown"></i> CANDY MAMÁ</h1>
+            <p id="status-text" class="map-subtitle">¡Elige un nivel para jugar!</p>
+        </div>
         
         <div id="map" class="map-container"></div>
 
-        <button class="reset-btn" onclick="reiniciarProgreso()">
-            <i class="fa-solid fa-rotate-left"></i> Reiniciar Juego
+        <button class="btn-secondary" onclick="reiniciarProgreso()">
+            <i class="fa-solid fa-rotate-left"></i> Reiniciar Progreso
         </button>
     </div>
 
-    <!-- PANTALLA DEL JUEGO -->
+    <!-- PANTALLA 2: JUEGO -->
     <div id="game-screen" class="screen game-wrapper">
-        <div class="sidebar">
-            <div class="title-card">
-                <h1 id="level-title">Nivel 1</h1>
-                <p id="target-text">Objetivo: 1000 pts</p>
+        <div class="hud-card">
+            <div class="hud-header">
+                <span id="level-title" class="hud-title">Nivel 1</span>
+                <span id="target-text" class="hud-target">Meta: 1000 pts</span>
             </div>
 
-            <!-- BARRA DE PROGRESO GRANDE CON ESTRELLAS -->
-            <div class="progress-card">
-                <div class="stat-label">
-                    <i class="fa-solid fa-bullseye" style="color: var(--accent-pink);"></i> Progreso del Nivel
-                </div>
-                <div class="progress-bar-container">
-                    <div id="progress-fill" class="progress-bar-fill"></div>
-                    <i class="fa-solid fa-star star-milestone star-1" id="m-star-1"></i>
-                    <i class="fa-solid fa-star star-milestone star-2" id="m-star-2"></i>
-                    <i class="fa-solid fa-star star-milestone star-3" id="m-star-3"></i>
-                </div>
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+                <i class="fa-solid fa-star star-milestone star-1" id="m-star-1"></i>
+                <i class="fa-solid fa-star star-milestone star-2" id="m-star-2"></i>
+                <i class="fa-solid fa-star star-milestone star-3" id="m-star-3"></i>
             </div>
 
-            <div class="top-bar">
+            <div class="stats-grid">
                 <div class="stat-box">
-                    <span class="stat-label"><i class="fa-solid fa-trophy" style="color: var(--accent-gold);"></i> Puntos</span>
+                    <span class="stat-label"><i class="fa-solid fa-trophy" style="color: var(--accent-gold);"></i> PUNTOS</span>
                     <span class="stat-value" id="score-val">0</span>
                 </div>
-
                 <div class="stat-box">
-                    <span class="stat-label"><i class="fa-solid fa-hourglass-half" style="color: var(--accent-cyan);"></i> Turnos</span>
+                    <span class="stat-label"><i class="fa-solid fa-hourglass-half" style="color: var(--accent-cyan);"></i> TURNOS</span>
                     <span class="stat-value" id="moves-val">15</span>
                 </div>
             </div>
         </div>
 
-        <!-- Canvas Phaser + Modal -->
+        <!-- Tablero Phaser -->
         <div id="game-container">
             <div id="result-modal" class="modal-overlay">
                 <div class="modal-card">
-                    <h2 id="modal-status" class="modal-title">¡NIVEL COMPLETADO!</h2>
+                    <h2 id="modal-status" class="modal-title">¡INCREÍBLE!</h2>
                     
                     <div class="stars-container">
                         <i class="fa-solid fa-star star-icon" id="star1"></i>
@@ -71,15 +66,15 @@
                         <i class="fa-solid fa-star star-icon" id="star3"></i>
                     </div>
 
-                    <p id="modal-score" style="font-size: 22px; font-weight: 600;">Puntuación: 0</p>
+                    <p id="modal-score" style="font-size: 22px; font-weight: 600;">Puntos: 0</p>
 
-                    <button class="btn" id="modal-action-btn"></button>
+                    <button class="btn-primary" id="modal-action-btn"></button>
                 </div>
             </div>
         </div>
 
-        <button class="btn" id="back-to-map-btn" style="background: rgba(255,255,255,0.12); box-shadow: none; margin-top: 4px;">
-            <i class="fa-solid fa-map"></i> Volver al Mapa
+        <button class="btn-secondary" id="back-to-map-btn" style="width: 100%; margin-top: 4px;">
+            <i class="fa-solid fa-map-location-dot"></i> Volver al Mapa
         </button>
     </div>
 
