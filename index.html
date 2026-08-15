@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match-3: Caramelos Rayados y Bombas de Color</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Phaser 3 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a102f;
+            --panel-bg: rgba(255, 255, 255, 0.08);
+            --panel-border: rgba(255, 255, 255, 0.18);
+            --accent-pink: #ff2a75;
+            --accent-gold: #ffc83b;
+            --accent-cyan: #00e5ff;
+            --text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(255, 42, 117, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(120, 40, 200, 0.2) 0%, transparent 70%);
+            font-family: 'Fredoka', sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 24px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            max-width: 1200px;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 280px;
+        }
+
+        .title-card {
+            background: linear-gradient(135deg, rgba(255, 42, 117, 0.3), rgba(120, 40, 200, 0.3));
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 16px 20px;
+            text-align: center;
+        }
+
+        .title-card h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff758c, #ff7eb3, #7afcff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .title-card p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--panel-border);
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .guide-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .guide-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 12px;
+        }
+
+        .guide-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .guide-badge.striped-h {
+            background: linear-gradient(135deg, #ff3366, #ff80a0);
+            border: 2px dashed #ffffff;
+        }
+
+        .guide-badge.striped-v {
+            background: linear-gradient(135deg, #3399ff, #80c0ff);
+            border: 2px dashed #ffffff;
+        }
+
+        .guide-badge.color-bomb {
+            background: radial-gradient(circle, #ff0055, #3d2314 70%);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .guide-text {
+            font-size: 12px;
+            line-height: 1.3;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .guide-text strong {
+            color: #ffffff;
+            display: block;
+            font-size: 13px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff2a75, #ff758c);
+            border: none;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(255, 42, 117, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(255, 42, 117, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        #game-container {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            background: rgba(10, 5, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 960px) {
+            .game-wrapper {
+                flex-direction: column-reverse;
+            }
+            .sidebar {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .title-card, .btn {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <!-- Panel Lateral -->
+        <div class="sidebar">
+            <div class="title-card">
+                <h1>Candy Blast</h1>
+                <p>Especiales & Combos Explosivos</p>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label"><i class="fa-solid fa-trophy" style="color: var(--accent-gold);"></i> Puntuación</span>
+                <span class="stat-value" id="score-val">0</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label"><i class="fa-solid fa-hourglass-half" style="color: var(--accent-cyan);"></i> Movimientos</span>
+                <span class="stat-value" id="moves-val">30</span>
+            </div>
+
+            <div class="guide-box">
+                <div class="guide-title">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Caramelos Especiales
+                </div>
+                
+                <div class="guide-item">
+                    <div class="guide-badge striped-h"><i class="fa-solid fa-arrows-left-right" style="color:#fff; font-size:14px;"></i></div>
+                    <div class="guide-text">
+                        <strong>Rayado Horizontal (4 en fila)</strong>
+                        Explota y limpia la fila entera.
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge striped-v"><i class="fa-solid fa-arrows-up-down" style="color:#fff; font-size:14px;"></i></div>
+                    <div class="guide-text">
+                        <strong>Rayado Vertical (4 en col)</strong>
+                        Explota y limpia la columna entera.
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge color-bomb"><i class="fa-solid fa-compact-disc" style="color:#ffea00; font-size:16px;"></i></div>
+                    <div class="guide-text">
+                        <strong>Bomba de Color (5 en línea)</strong>
+                        Intercámbiala con un caramelo para destruir todos los de ese color.
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="restart-btn">
+                <i class="fa-solid fa-rotate-right"></i> Nueva Partida
+            </button>
+        </div>
+
+        <!-- Contenedor del Canvas Phaser -->
+        <div id="game-container"></div>
+    </div>
+
+    <script>
+        // Synthesizer de Audio Web API para SFX dinámicos sin assets externos
+        class SoundFX {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            playPop() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playStripedBlast() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+
+            playColorBombBlast() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                // Ruido blanco + sweep de frecuencia descendente
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.5);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.5);
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // Configuración de Constantes del Juego
+        const GRID_SIZE = 8;
+        const TILE_SIZE = 70;
+        const BOARD_OFFSET_X = 40;
+        const BOARD_OFFSET_Y = 40;
+        const NUM_COLORS = 5;
+
+        // Paleta de Colores de Caramelos (Rojo, Azul, Verde, Amarillo, Púrpura)
+        const CANDY_COLORS = [0xff3366, 0x3399ff, 0x33cc66, 0xffcc00, 0xaa33ff];
+
+        class Match3Scene extends Phaser.Scene {
+            constructor() {
+                super('Match3Scene');
+            }
+
+            preload() {
+                this.generateTextures();
+            }
+
+            // Generar Texturas Procedurales Crisp para Caramelos Normales y Especiales
+            generateTextures() {
+                CANDY_COLORS.forEach((color, idx) => {
+                    // 1. Caramelo Normal
+                    let g = this.make.graphics({x: 0, y: 0, add: false});
+                    g.fillStyle(color, 1);
+                    g.fillRoundedRect(4, 4, 56, 56, 16);
+                    g.fillStyle(0xffffff, 0.4);
+                    g.fillCircle(20, 20, 10);
+                    g.generateTexture(`candy_${idx}`, 64, 64);
+                    g.destroy();
+
+                    // 2. Caramelo Rayado Horizontal (Franjas Blancas horizontales)
+                    g = this.make.graphics({x: 0, y: 0, add: false});
+                    g.fillStyle(color, 1);
+                    g.fillRoundedRect(4, 4, 56, 56, 16);
+                    g.fillStyle(0xffffff, 0.9);
+                    g.fillRect(8, 18, 48, 8);
+                    g.fillRect(8, 38, 48, 8);
+                    g.fillStyle(0xffffff, 0.4);
+                    g.fillCircle(20, 14, 6);
+                    g.generateTexture(`striped_h_${idx}`, 64, 64);
+                    g.destroy();
+
+                    // 3. Caramelo Rayado Vertical (Franjas Blancas verticales)
+                    g = this.make.graphics({x: 0, y: 0, add: false});
+                    g.fillStyle(color, 1);
+                    g.fillRoundedRect(4, 4, 56, 56, 16);
+                    g.fillStyle(0xffffff, 0.9);
+                    g.fillRect(18, 8, 8, 48);
+                    g.fillRect(38, 8, 8, 48);
+                    g.fillStyle(0xffffff, 0.4);
+                    g.fillCircle(14, 20, 6);
+                    g.generateTexture(`striped_v_${idx}`, 64, 64);
+                    g.destroy();
+                });
+
+                // 4. Bomba de Color (Esfera de Chocolate con chispas de colores vibrantes)
+                let g = this.make.graphics({x: 0, y: 0, add: false});
+                g.fillStyle(0x3d2314, 1);
+                g.fillCircle(32, 32, 28);
+                const sprinkles = [0xff0055, 0x00ccff, 0x33ff55, 0xffdd00, 0xff55ff, 0xffffff];
+                sprinkles.forEach((sc, i) => {
+                    let angle = (i / sprinkles.length) * Math.PI * 2;
+                    let px = 32 + Math.cos(angle) * 16;
+                    let py = 32 + Math.sin(angle) * 16;
+                    g.fillStyle(sc, 1);
+                    g.fillCircle(px, py, 6);
+                });
+                g.fillStyle(0xffffff, 0.9);
+                g.fillCircle(32, 32, 6);
+                g.generateTexture('color_bomb', 64, 64);
+                g.destroy();
+
+                // 5. Partícula para Explosiones
+                g = this.make.graphics({x: 0, y: 0, add: false});
+                g.fillStyle(0xffffff, 1);
+                g.fillCircle(8, 8, 8);
+                g.generateTexture('sparkle', 16, 16);
+                g.destroy();
+            }
+
+            create() {
+                this.score = 0;
+                this.moves = 30;
+                this.canMove = true;
+                this.selectedCandy = null;
+                this.board = [];
+
+                this.updateUI();
+                this.drawBoardBackground();
+                this.createEmitter();
+                this.initBoard();
+
+                // Evento Global de Click/Selección
+                this.input.on('gameobjectdown', this.onCandyClick, this);
+
+                // Conectar Botón de Reinicio HTML
+                document.getElementById('restart-btn').onclick = () => {
+                    this.scene.restart();
+                };
+            }
+
+            drawBoardBackground() {
+                const bg = this.add.graphics();
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        const x = BOARD_OFFSET_X + c * TILE_SIZE;
+                        const y = BOARD_OFFSET_Y + r * TILE_SIZE;
+                        const isEven = (r + c) % 2 === 0;
+                        bg.fillStyle(isEven ? 0x1f153a : 0x170e2e, 0.8);
+                        bg.fillRoundedRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4, 12);
+                    }
+                }
+            }
+
+            createEmitter() {
+                this.emitter = this.add.particles(0, 0, 'sparkle', {
+                    speed: { min: 100, max: 300 },
+                    scale: { start: 1, end: 0 },
+                    blendMode: 'ADD',
+                    lifespan: 500,
+                    emitting: false
+                });
+            }
+
+            initBoard() {
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    this.board[r] = [];
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        let color;
+                        // Evitar que se generen matches de 3 al inicio
+                        do {
+                            color = Phaser.Math.Between(0, NUM_COLORS - 1);
+                        } while (
+                            (c >= 2 && this.board[r][c-1].color === color && this.board[r][c-2].color === color) ||
+                            (r >= 2 && this.board[r-1][c].color === color && this.board[r-2][c].color === color)
+                        );
+
+                        this.spawnCandy(r, c, color, null);
+                    }
+                }
+            }
+
+            spawnCandy(r, c, color, special = null) {
+                const x = BOARD_OFFSET_X + c * TILE_SIZE + TILE_SIZE / 2;
+                const y = BOARD_OFFSET_Y + r * TILE_SIZE + TILE_SIZE / 2;
+
+                let textureKey = `candy_${color}`;
+                if (special === 'striped_h') textureKey = `striped_h_${color}`;
+                else if (special === 'striped_v') textureKey = `striped_v_${color}`;
+                else if (special === 'color_bomb') textureKey = 'color_bomb';
+
+                const sprite = this.add.sprite(x, y - 400, textureKey).setInteractive();
+                sprite.setScale(0.9);
+
+                const candy = { r, c, color, special, sprite };
+                sprite.candyRef = candy;
+                this.board[r][c] = candy;
+
+                this.tweens.add({
+                    targets: sprite,
+                    y: y,
+                    duration: 400,
+                    ease: 'Bounce.easeOut',
+                    delay: r * 30 + c * 10
+                });
+
+                return candy;
+            }
+
+            onCandyClick(pointer, sprite) {
+                if (!this.canMove || this.moves <= 0) return;
+                const candy = sprite.candyRef;
+
+                if (!this.selectedCandy) {
+                    // Primer Clic: Seleccionar
+                    this.selectedCandy = candy;
+                    this.tweens.add({
+                        targets: sprite,
+                        scaleX: 1.1,
+                        scaleY: 1.1,
+                        duration: 150,
+                        yoyo: true,
+                        repeat: -1
+                    });
+                    sfx.playPop();
+                } else {
+                    // Segundo Clic: Intentar Intercambio o Deseleccionar
+                    const first = this.selectedCandy;
+                    this.tweens.killTweensOf(first.sprite);
+                    first.sprite.setScale(0.9);
+
+                    if (first === candy) {
+                        this.selectedCandy = null;
+                        return;
+                    }
+
+                    // Verificar si son adyacentes
+                    const isAdjacent = Math.abs(first.r - candy.r) + Math.abs(first.c - candy.c) === 1;
+
+                    if (isAdjacent) {
+                        this.swapCandies(first, candy);
+                    } else {
+                        // Seleccionar el nuevo caramelo si no es adyacente
+                        this.selectedCandy = candy;
+                        this.tweens.add({
+                            targets: sprite,
+                            scaleX: 1.1,
+                            scaleY: 1.1,
+                            duration: 150,
+                            yoyo: true,
+                            repeat: -1
+                        });
+                        sfx.playPop();
+                    }
+                }
+            }
+
+            swapCandies(c1, c2) {
+                this.canMove = false;
+                this.selectedCandy = null;
+
+                // Actualizar matriz
+                this.board[c1.r][c1.c] = c2;
+                this.board[c2.r][c2.c] = c1;
+
+                const r1 = c1.r, col1 = c1.c;
+                c1.r = c2.r; c1.c = c2.c;
+                c2.r = r1; c2.c = col1;
+
+                const x1 = BOARD_OFFSET_X + c1.c * TILE_SIZE + TILE_SIZE / 2;
+                const y1 = BOARD_OFFSET_Y + c1.r * TILE_SIZE + TILE_SIZE / 2;
+                const x2 = BOARD_OFFSET_X + c2.c * TILE_SIZE + TILE_SIZE / 2;
+                const y2 = BOARD_OFFSET_Y + c2.r * TILE_SIZE + TILE_SIZE / 2;
+
+                // Animación de Intercambio
+                this.tweens.add({
+                    targets: c1.sprite,
+                    x: x1, y: y1,
+                    duration: 200
+                });
+
+                this.tweens.add({
+                    targets: c2.sprite,
+                    x: x2, y: y2,
+                    duration: 200,
+                    onComplete: () => {
+                        this.checkSwapMatches(c1, c2);
+                    }
+                });
+            }
+
+            checkSwapMatches(c1, c2) {
+                // 1. Caso Especial: Bomba de Color combinada con otra Bomba de Color
+                if (c1.special === 'color_bomb' && c2.special === 'color_bomb') {
+                    this.triggerDoubleColorBomb(c1, c2);
+                    return;
+                }
+
+                // 2. Caso Especial: Bomba de Color combinada con Caramelo Normal o Rayado
+                if (c1.special === 'color_bomb' || c2.special === 'color_bomb') {
+                    const bomb = c1.special === 'color_bomb' ? c1 : c2;
+                    const other = c1.special === 'color_bomb' ? c2 : c1;
+                    this.triggerColorBombEffect(bomb, other);
+                    return;
+                }
+
+                // 3. Verificación de Combos Estándar (3, 4 y 5 en línea)
+                const matches = this.getMatches();
+
+                if (matches.length > 0) {
+                    this.moves--;
+                    this.updateUI();
+                    this.processMatches(matches, c1, c2);
+                } else {
+                    // Intercambio inválido: Devolver a posición original
+                    this.board[c1.r][c1.c] = c2;
+                    this.board[c2.r][c2.c] = c1;
+                    const r1 = c1.r, col1 = c1.c;
+                    c1.r = c2.r; c1.c = c2.c;
+                    c2.r = r1; c2.c = col1;
+
+                    const x1 = BOARD_OFFSET_X + c1.c * TILE_SIZE + TILE_SIZE / 2;
+                    const y1 = BOARD_OFFSET_Y + c1.r * TILE_SIZE + TILE_SIZE / 2;
+                    const x2 = BOARD_OFFSET_X + c2.c * TILE_SIZE + TILE_SIZE / 2;
+                    const y2 = BOARD_OFFSET_Y + c2.r * TILE_SIZE + TILE_SIZE / 2;
+
+                    this.tweens.add({ targets: c1.sprite, x: x1, y: y1, duration: 200 });
+                    this.tweens.add({
+                        targets: c2.sprite, x: x2, y: y2, duration: 200,
+                        onComplete: () => { this.canMove = true; }
+                    });
+                }
+            }
+
+            // Algoritmo para detectar todas las secuencias en el tablero
+            getMatches() {
+                const matches = [];
+                const matchedSet = new Set();
+
+                // Detección Horizontal
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    let matchLen = 1;
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        let checkNext = false;
+                        if (c < GRID_SIZE - 1) {
+                            const curr = this.board[r][c];
+                            const next = this.board[r][c+1];
+                            if (curr && next && curr.special !== 'color_bomb' && next.special !== 'color_bomb' && curr.color === next.color) {
+                                matchLen++;
+                                checkNext = true;
+                            }
+                        }
+                        if (!checkNext) {
+                            if (matchLen >= 3) {
+                                const group = [];
+                                for (let k = 0; k < matchLen; k++) {
+                                    const tile = this.board[r][c - k];
+                                    group.push(tile);
+                                    matchedSet.add(tile);
+                                }
+                                matches.push({ dir: 'h', group: group, len: matchLen });
+                            }
+                            matchLen = 1;
+                        }
+                    }
+                }
+
+                // Detección Vertical
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    let matchLen = 1;
+                    for (let r = 0; r < GRID_SIZE; r++) {
+                        let checkNext = false;
+                        if (r < GRID_SIZE - 1) {
+                            const curr = this.board[r][c];
+                            const next = this.board[r+1][c];
+                            if (curr && next && curr.special !== 'color_bomb' && next.special !== 'color_bomb' && curr.color === next.color) {
+                                matchLen++;
+                                checkNext = true;
+                            }
+                        }
+                        if (!checkNext) {
+                            if (matchLen >= 3) {
+                                const group = [];
+                                for (let k = 0; k < matchLen; k++) {
+                                    const tile = this.board[r - k][c];
+                                    group.push(tile);
+                                    matchedSet.add(tile);
+                                }
+                                matches.push({ dir: 'v', group: group, len: matchLen });
+                            }
+                            matchLen = 1;
+                        }
+                    }
+                }
+
+                return matches;
+            }
+
+            // Procesa las combinaciones y determina la creación de Caramelos Rayados o Bombas de Color
+            processMatches(matches, swapC1 = null, swapC2 = null) {
+                const toDestroy = new Set();
+                const specialsToCreate = [];
+
+                matches.forEach(m => {
+                    m.group.forEach(candy => toDestroy.add(candy));
+
+                    // 1. Lógica de Creación de Bomba de Color (5 en línea)
+                    if (m.len >= 5) {
+                        let spawnTile = m.group.find(c => c === swapC1 || c === swapC2) || m.group[Math.floor(m.group.length / 2)];
+                        specialsToCreate.push({ tile: spawnTile, type: 'color_bomb', color: 99 });
+                    }
+                    // 2. Lógica de Creación de Caramelo Rayado (4 en línea)
+                    else if (m.len === 4) {
+                        let spawnTile = m.group.find(c => c === swapC1 || c === swapC2) || m.group[1];
+                        // Si el match fue Horizontal -> Rayado Horizontal. Si fue Vertical -> Rayado Vertical.
+                        let specialType = (m.dir === 'h') ? 'striped_h' : 'striped_v';
+                        specialsToCreate.push({ tile: spawnTile, type: specialType, color: spawnTile.color });
+                    }
+                });
+
+                // Expandir la destrucción si hay Caramelos Especiales dentro del grupo eliminado
+                const finalDestroySet = new Set();
+                toDestroy.forEach(candy => {
+                    this.expandExplosions(candy, finalDestroySet);
+                });
+
+                // Remover los caramelos especiales recién creados del grupo de destrucción para transformarlos
+                specialsToCreate.forEach(sp => {
+                    finalDestroySet.delete(sp.tile);
+                });
+
+                this.animateDestruction(finalDestroySet, specialsToCreate);
+            }
+
+            // Expansión recursiva de explosiones (Efectos de fila/columna completa)
+            expandExplosions(candy, destroySet) {
+                if (destroySet.has(candy)) return;
+                destroySet.add(candy);
+
+                // Caramelo Rayado Horizontal: Limpia la FILA completa
+                if (candy.special === 'striped_h') {
+                    this.triggerLineFX(candy.r, candy.c, 'h');
+                    sfx.playStripedBlast();
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        const target = this.board[candy.r][c];
+                        if (target) this.expandExplosions(target, destroySet);
+                    }
+                }
+                // Caramelo Rayado Vertical: Limpia la COLUMNA completa
+                else if (candy.special === 'striped_v') {
+                    this.triggerLineFX(candy.r, candy.c, 'v');
+                    sfx.playStripedBlast();
+                    for (let r = 0; r < GRID_SIZE; r++) {
+                        const target = this.board[r][candy.c];
+                        if (target) this.expandExplosions(target, destroySet);
+                    }
+                }
+            }
+
+            // Efecto Visual de Rayo Láser / Haz de Energía para Caramelos Rayados
+            triggerLineFX(r, c, dir) {
+                const fx = this.add.graphics();
+                fx.fillStyle(0xffffff, 0.9);
+
+                const centerX = BOARD_OFFSET_X + c * TILE_SIZE + TILE_SIZE / 2;
+                const centerY = BOARD_OFFSET_Y + r * TILE_SIZE + TILE_SIZE / 2;
+
+                if (dir === 'h') {
+                    fx.fillRect(BOARD_OFFSET_X, centerY - 12, GRID_SIZE * TILE_SIZE, 24);
+                } else {
+                    fx.fillRect(centerX - 12, BOARD_OFFSET_Y, 24, GRID_SIZE * TILE_SIZE);
+                }
+
+                this.cameras.main.shake(150, 0.008);
+
+                this.tweens.add({
+                    targets: fx,
+                    alpha: 0,
+                    duration: 300,
+                    onComplete: () => fx.destroy()
+                });
+            }
+
+            // Acción Especial: Bomba de Color + Caramelo Normal/Rayado
+            triggerColorBombEffect(bomb, targetCandy) {
+                this.moves--;
+                this.updateUI();
+
+                const targetColor = targetCandy.color;
+                const destroySet = new Set();
+                destroySet.add(bomb);
+
+                // Emisión de rayos hacia todos los caramelos del color objetivo
+                const bombX = BOARD_OFFSET_X + bomb.c * TILE_SIZE + TILE_SIZE / 2;
+                const bombY = BOARD_OFFSET_Y + bomb.r * TILE_SIZE + TILE_SIZE / 2;
+
+                sfx.playColorBombBlast();
+                this.cameras.main.shake(250, 0.012);
+
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        const tile = this.board[r][c];
+                        if (tile && (tile.color === targetColor || targetCandy.special === 'color_bomb')) {
+                            destroySet.add(tile);
+                            
+                            // Rayo de energía hacia el caramelo
+                            const tx = BOARD_OFFSET_X + c * TILE_SIZE + TILE_SIZE / 2;
+                            const ty = BOARD_OFFSET_Y + r * TILE_SIZE + TILE_SIZE / 2;
+
+                            const line = this.add.graphics();
+                            line.lineStyle(4, CANDY_COLORS[targetColor] || 0xffea00, 1);
+                            line.lineBetween(bombX, bombY, tx, ty);
+
+                            this.tweens.add({
+                                targets: line,
+                                alpha: 0,
+                                duration: 400,
+                                onComplete: () => line.destroy()
+                            });
+                        }
+                    }
+                }
+
+                // Expandir explosiones por si se activan caramelos rayados del color objetivo
+                const finalSet = new Set();
+                destroySet.forEach(c => this.expandExplosions(c, finalSet));
+
+                this.animateDestruction(finalSet, []);
+            }
+
+            // Acción Especial Extrema: Bomba de Color + Bomba de Color (Destruye Todo el Tablero)
+            triggerDoubleColorBomb(b1, b2) {
+                this.moves--;
+                this.updateUI();
+
+                sfx.playColorBombBlast();
+                this.cameras.main.shake(400, 0.02);
+
+                const destroySet = new Set();
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (this.board[r][c]) destroySet.add(this.board[r][c]);
+                    }
+                }
+
+                this.animateDestruction(destroySet, []);
+            }
+
+            // Animación de destrucción y spawn de especiales
+            animateDestruction(destroySet, specialsToCreate) {
+                this.score += destroySet.size * 50;
+                this.updateUI();
+
+                let count = 0;
+                const total = destroySet.size;
+
+                if (total === 0) {
+                    this.fallAndRefill();
+                    return;
+                }
+
+                destroySet.forEach(candy => {
+                    const x = BOARD_OFFSET_X + candy.c * TILE_SIZE + TILE_SIZE / 2;
+                    const y = BOARD_OFFSET_Y + candy.r * TILE_SIZE + TILE_SIZE / 2;
+
+                    // Emitir Partículas
+                    this.emitter.emitParticleAt(x, y, 8);
+
+                    this.tweens.add({
+                        targets: candy.sprite,
+                        scaleX: 0,
+                        scaleY: 0,
+                        alpha: 0,
+                        duration: 250,
+                        onComplete: () => {
+                            candy.sprite.destroy();
+                            this.board[candy.r][candy.c] = null;
+                            count++;
+                            if (count >= total) {
+                                // Transformar caramelos especiales
+                                specialsToCreate.forEach(sp => {
+                                    this.spawnCandy(sp.tile.r, sp.tile.c, sp.color, sp.type);
+                                    // Texto flotante de bonus
+                                    this.showFloatingText(sp.tile.r, sp.tile.c, sp.type === 'color_bomb' ? 'BOMBA DE COLOR!' : 'CARAMELO RAYADO!');
+                                });
+
+                                this.time.delayedCall(150, () => this.fallAndRefill());
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Mostrar texto flotante cuando se crea un Caramelo Especial
+            showFloatingText(r, c, text) {
+                const x = BOARD_OFFSET_X + c * TILE_SIZE + TILE_SIZE / 2;
+                const y = BOARD_OFFSET_Y + r * TILE_SIZE + TILE_SIZE / 2;
+
+                const txt = this.add.text(x, y, text, {
+                    fontFamily: 'Fredoka',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    fill: '#ffea00',
+                    stroke: '#000000',
+                    strokeThickness: 4
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: txt,
+                    y: y - 50,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => txt.destroy()
+                });
+            }
+
+            // Caída de caramelos y llenado de vacíos en el tablero
+            fallAndRefill() {
+                let maxFalls = 0;
+
+                // 1. Desplazar caramelos hacia abajo
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    let emptySpaces = 0;
+                    for (let r = GRID_SIZE - 1; r >= 0; r--) {
+                        if (this.board[r][c] === null) {
+                            emptySpaces++;
+                        } else if (emptySpaces > 0) {
+                            const candy = this.board[r][c];
+                            const newR = r + emptySpaces;
+
+                            this.board[newR][c] = candy;
+                            this.board[r][c] = null;
+                            candy.r = newR;
+
+                            const targetY = BOARD_OFFSET_Y + newR * TILE_SIZE + TILE_SIZE / 2;
+                            maxFalls = Math.max(maxFalls, emptySpaces);
+
+                            this.tweens.add({
+                                targets: candy.sprite,
+                                y: targetY,
+                                duration: 250 + emptySpaces * 40,
+                                ease: 'Power2'
+                            });
+                        }
+                    }
+
+                    // 2. Generar nuevos caramelos en la parte superior
+                    for (let i = 0; i < emptySpaces; i++) {
+                        const newR = emptySpaces - 1 - i;
+                        const color = Phaser.Math.Between(0, NUM_COLORS - 1);
+                        this.spawnCandy(newR, c, color, null);
+                    }
+                }
+
+                // 3. Evaluar de nuevo el tablero para cascadas (Combos en cadena)
+                this.time.delayedCall(350 + maxFalls * 40, () => {
+                    const cascadeMatches = this.getMatches();
+                    if (cascadeMatches.length > 0) {
+                        this.processMatches(cascadeMatches);
+                    } else {
+                        this.canMove = true;
+                    }
+                });
+            }
+
+            updateUI() {
+                document.getElementById('score-val').innerText = this.score;
+                document.getElementById('moves-val').innerText = this.moves;
+            }
+        }
+
+        // Inicialización de la aplicación Phaser 3
+        const config = {
+            type: Phaser.AUTO,
+            width: 640,
+            height: 640,
+            parent: 'game-container',
+            backgroundColor: '#0d071e',
+            scene: Match3Scene
+        };
+
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+</html>
+``by Lorena
