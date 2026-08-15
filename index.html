@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego de Caramelos</title>
+    <title>Match-3 Candy Kingdom</title>
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
@@ -14,9 +14,17 @@
 </head>
 <body>
 
+    <!-- CAPAS DE FONDO PARALLAX -->
+    <div class="parallax-container">
+        <div id="bg-layer-1" class="parallax-layer"></div>
+        <div id="bg-layer-2" class="parallax-layer"></div>
+        <div id="bg-layer-3" class="parallax-layer"></div>
+    </div>
+
     <!-- PANTALLA 1: MAPA DE INICIO CON AVATAR -->
     <div id="map-screen" class="screen map-wrapper active">
         <div class="map-header">
+            <img src="img/candy-banner.png" alt="Banner" class="header-banner bouncing-element">
             <h1 class="map-title"><i class="fa-solid fa-star"></i> NIVELES</h1>
             <p id="status-text" class="map-subtitle">Elige un nivel para jugar</p>
         </div>
@@ -24,6 +32,9 @@
         <div id="map" class="map-container">
             <div id="player-avatar"><i class="fa-solid fa-face-smile"></i></div>
         </div>
+
+        <!-- Personaje Mascota en la Pantalla Principal -->
+        <img src="img/character-happy.png" alt="Mascota" class="mascot-character bouncing-element">
 
         <button class="btn-secondary" onclick="reiniciarProgreso()">
             <i class="fa-solid fa-rotate-left"></i> Volver al Nivel 1
@@ -62,6 +73,7 @@
             <!-- Modal Normal de Resultado (Ganó / Casi) -->
             <div id="result-modal" class="modal-overlay">
                 <div class="modal-card">
+                    <img id="modal-character" src="img/character-happy.png" alt="Personaje" class="modal-mascot bouncing-element">
                     <h2 id="modal-status" class="modal-title">¡MUY BIEN!</h2>
                     
                     <div class="stars-container">
@@ -76,13 +88,13 @@
                 </div>
             </div>
 
-            <!-- Modal de Gran Victoria Final (Al completar todos los niveles) -->
+            <!-- Modal de Gran Victoria Final -->
             <div id="final-victory-modal" class="modal-overlay">
                 <div class="modal-card final-victory-card">
-                    <i class="fa-solid fa-trophy trophy-icon"></i>
+                    <img src="img/character-victory.png" alt="Victoria" class="final-mascot bouncing-element">
                     <h2 class="modal-title" style="color: var(--accent-gold);">¡FELICIDADES!</h2>
                     <p style="font-size: 22px; font-weight: 700; color: #ffffff;">¡Completaste todo el juego!</p>
-                    <p style="font-size: 18px; color: rgba(255,255,255,0.9);">Eres increible, ¡lo hiciste súper bien!</p>
+                    <p style="font-size: 18px; color: rgba(255,255,255,0.9);">Eres increíble, ¡lo hiciste súper bien!</p>
                     
                     <button class="btn-primary" onclick="volverAlMapaDesdeVictoria()" style="margin-top: 10px;">
                         <i class="fa-solid fa-map-location-dot"></i> Volver al Mapa
@@ -90,6 +102,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Paleta Decorativa Lateral -->
+        <img src="img/lollipop-decor.png" alt="Lollipop" class="side-lollipop bouncing-element">
 
         <button class="btn-secondary" id="back-to-map-btn" style="width: 100%; margin-top: 4px;">
             <i class="fa-solid fa-arrow-left"></i> Volver a Niveles

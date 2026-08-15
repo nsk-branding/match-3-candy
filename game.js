@@ -1,3 +1,17 @@
+// === EFECTO PARALLAX INTERACTIVO SEGÚN EL MOUSE ===
+document.addEventListener('mousemove', (e) => {
+    const mouseX = (e.clientX / window.innerWidth) - 0.5;
+    const mouseY = (e.clientY / window.innerHeight) - 0.5;
+
+    const layer1 = document.getElementById('bg-layer-1');
+    const layer2 = document.getElementById('bg-layer-2');
+    const layer3 = document.getElementById('bg-layer-3');
+
+    if (layer1) layer1.style.transform = `translate(${mouseX * 12}px, ${mouseY * 12}px)`;
+    if (layer2) layer2.style.transform = `translate(${mouseX * 25}px, ${mouseY * 25}px)`;
+    if (layer3) layer3.style.transform = `translate(${mouseX * 45}px, ${mouseY * 45}px)`;
+});
+
 // === SISTEMA DE MAPA Y NIVELES ===
 const TOTAL_NIVELES = 12;
 let nivelMaximo = parseInt(localStorage.getItem('candy_nivel_maximo')) || 1;
@@ -547,8 +561,6 @@ class Match3Scene extends Phaser.Scene {
         }
 
         this.time.delayedCall(250 + maxFalls * 30, () => {
-            // SI SE CREÓ UN SUPER CARAMELO, NO ACTIVAMOS CASCADA AUTOMÁTICA
-            // Para que el jugador pueda disfrutarlo y activarlo él mismo.
             if (createdSpecial) {
                 this.canMove = true;
                 this.checkGameStatus();
@@ -634,10 +646,15 @@ class Match3Scene extends Phaser.Scene {
         const title = document.getElementById('modal-status');
         const scoreTxt = document.getElementById('modal-score');
         const actionBtn = document.getElementById('modal-action-btn');
+        const charImg = document.getElementById('modal-character');
 
         title.innerText = gano ? '¡MUY BIEN!' : '¡CASI!';
         title.style.color = gano ? 'var(--accent-gold)' : 'var(--accent-pink)';
         scoreTxt.innerText = `Puntos: ${this.score}`;
+
+        if (charImg) {
+            charImg.src = gano ? 'img/character-happy.png' : 'img/character-happy.png';
+        }
 
         [1, 2, 3].forEach(i => {
             const starEl = document.getElementById(`star${i}`);
