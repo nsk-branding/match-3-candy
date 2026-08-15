@@ -1,13 +1,13 @@
 // === SISTEMA DE MAPA Y NIVELES ===
 const TOTAL_NIVELES = 12;
-let nivelMaximo = parseInt(localStorage.getItem('mamita_nivel_maximo')) || 1;
+let nivelMaximo = parseInt(localStorage.getItem('candy_nivel_maximo')) || 1;
 let nivelActual = 1;
 let gameInstance = null;
 
 function getConfigNivel(num) {
     return {
-        movimientos: Math.max(25 - num, 12),
-        objetivoScore: num * 1200
+        movimientos: 25,
+        objetivoScore: num * 1000
     };
 }
 
@@ -16,7 +16,7 @@ function renderizarMapa() {
     const statusText = document.getElementById('status-text');
     mapContainer.innerHTML = '';
 
-    statusText.innerText = `¡Vas por el Nivel ${nivelMaximo}! ❤️`;
+    statusText.innerText = `Nivel actual: ${nivelMaximo}`;
 
     for (let i = 1; i <= TOTAL_NIVELES; i++) {
         const row = document.createElement('div');
@@ -35,7 +35,7 @@ function renderizarMapa() {
         } else {
             btn.classList.add('locked');
             btn.innerHTML = '<i class="fa-solid fa-lock"></i>';
-            btn.onclick = () => alert('¡Mamá, primero debes completar los niveles anteriores!');
+            btn.onclick = () => {};
         }
 
         row.appendChild(btn);
@@ -73,8 +73,8 @@ function volverAlMapa() {
 }
 
 function reiniciarProgreso() {
-    if (confirm('¿Quieres volver a empezar desde el Nivel 1?')) {
-        localStorage.removeItem('mamita_nivel_maximo');
+    if (confirm('¿Quieres volver al Nivel 1?')) {
+        localStorage.removeItem('candy_nivel_maximo');
         nivelMaximo = 1;
         renderizarMapa();
     }
@@ -82,7 +82,7 @@ function reiniciarProgreso() {
 
 document.getElementById('back-to-map-btn').onclick = volverAlMapa;
 
-// === AUDIO WEBAUDIO DIVERTIMENTO ===
+// === SONIDOS ===
 class SoundFX {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -92,9 +92,9 @@ class SoundFX {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(350, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(850, this.ctx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
         osc.connect(gain); gain.connect(this.ctx.destination);
         osc.start(); osc.stop(this.ctx.currentTime + 0.08);
@@ -103,26 +103,26 @@ class SoundFX {
     playBlast() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(700, this.ctx.currentTime + 0.2);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(600, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
         osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
     }
 
     playWin() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
-        const notes = [261, 329, 392, 523];
+        const notes = [261.63, 329.63, 392.00, 523.25];
         notes.forEach((f, i) => {
             const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
-            osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.1);
-            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.1 + 0.2);
+            osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.12);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.12 + 0.25);
             osc.connect(gain); gain.connect(this.ctx.destination);
-            osc.start(this.ctx.currentTime + i * 0.1);
-            osc.stop(this.ctx.currentTime + i * 0.1 + 0.2);
+            osc.start(this.ctx.currentTime + i * 0.12);
+            osc.stop(this.ctx.currentTime + i * 0.12 + 0.25);
         });
     }
 }
@@ -205,8 +205,8 @@ class Match3Scene extends Phaser.Scene {
 
     createEmitter() {
         this.emitter = this.add.particles(0, 0, 'sparkle', {
-            speed: { min: 100, max: 350 }, scale: { start: 1.2, end: 0 },
-            blendMode: 'ADD', lifespan: 500, emitting: false
+            speed: { min: 80, max: 200 }, scale: { start: 1, end: 0 },
+            blendMode: 'ADD', lifespan: 400, emitting: false
         });
     }
 
@@ -241,7 +241,7 @@ class Match3Scene extends Phaser.Scene {
         sprite.candyRef = candy;
         this.board[r][c] = candy;
 
-        this.tweens.add({ targets: sprite, y: y, duration: 400, ease: 'Bounce.easeOut', delay: r * 25 + c * 10 });
+        this.tweens.add({ targets: sprite, y: y, duration: 350, ease: 'Bounce.easeOut', delay: r * 20 + c * 8 });
         return candy;
     }
 
@@ -251,7 +251,7 @@ class Match3Scene extends Phaser.Scene {
 
         if (!this.selectedCandy) {
             this.selectedCandy = candy;
-            this.tweens.add({ targets: sprite, scaleX: 1.1, scaleY: 1.1, duration: 150, yoyo: true, repeat: -1 });
+            this.tweens.add({ targets: sprite, scaleX: 1.08, scaleY: 1.08, duration: 150, yoyo: true, repeat: -1 });
             sfx.playPop();
         } else {
             const first = this.selectedCandy;
@@ -266,7 +266,7 @@ class Match3Scene extends Phaser.Scene {
                 this.swapCandies(first, candy);
             } else {
                 this.selectedCandy = candy;
-                this.tweens.add({ targets: sprite, scaleX: 1.1, scaleY: 1.1, duration: 150, yoyo: true, repeat: -1 });
+                this.tweens.add({ targets: sprite, scaleX: 1.08, scaleY: 1.08, duration: 150, yoyo: true, repeat: -1 });
                 sfx.playPop();
             }
         }
@@ -288,9 +288,9 @@ class Match3Scene extends Phaser.Scene {
         const x2 = BOARD_OFFSET_X + c2.c * TILE_SIZE + TILE_SIZE / 2;
         const y2 = BOARD_OFFSET_Y + c2.r * TILE_SIZE + TILE_SIZE / 2;
 
-        this.tweens.add({ targets: c1.sprite, x: x1, y: y1, duration: 200 });
+        this.tweens.add({ targets: c1.sprite, x: x1, y: y1, duration: 180 });
         this.tweens.add({
-            targets: c2.sprite, x: x2, y: y2, duration: 200,
+            targets: c2.sprite, x: x2, y: y2, duration: 180,
             onComplete: () => this.checkSwapMatches(c1, c2)
         });
     }
@@ -320,9 +320,9 @@ class Match3Scene extends Phaser.Scene {
             const x2 = BOARD_OFFSET_X + c2.c * TILE_SIZE + TILE_SIZE / 2;
             const y2 = BOARD_OFFSET_Y + c2.r * TILE_SIZE + TILE_SIZE / 2;
 
-            this.tweens.add({ targets: c1.sprite, x: x1, y: y1, duration: 200 });
+            this.tweens.add({ targets: c1.sprite, x: x1, y: y1, duration: 180 });
             this.tweens.add({
-                targets: c2.sprite, x: x2, y: y2, duration: 200,
+                targets: c2.sprite, x: x2, y: y2, duration: 180,
                 onComplete: () => { this.canMove = true; }
             });
         }
@@ -395,7 +395,7 @@ class Match3Scene extends Phaser.Scene {
         specialsToCreate.forEach(sp => finalDestroySet.delete(sp.tile));
 
         if (finalDestroySet.size > 5) {
-            this.showFloatingText('¡GENIAL, MAMÁ!', 320, 320);
+            this.showFloatingText('¡EXCELENTE!', 320, 320);
         }
 
         this.animateDestruction(finalDestroySet, specialsToCreate);
@@ -407,7 +407,7 @@ class Match3Scene extends Phaser.Scene {
 
         if (candy.special === 'striped_h' || candy.special === 'striped_v') {
             sfx.playBlast();
-            this.cameras.main.shake(150, 0.008);
+            this.cameras.main.shake(120, 0.005);
             if (candy.special === 'striped_h') {
                 for (let c = 0; c < GRID_SIZE; c++) if (this.board[candy.r][c]) this.expandExplosions(this.board[candy.r][c], destroySet);
             } else {
@@ -420,8 +420,8 @@ class Match3Scene extends Phaser.Scene {
         this.moves--;
         this.updateUI();
         sfx.playBlast();
-        this.cameras.main.shake(250, 0.012);
-        this.showFloatingText('¡SUPER DULCE!', 320, 320);
+        this.cameras.main.shake(200, 0.008);
+        this.showFloatingText('¡GENIAL!', 320, 320);
 
         const targetColor = targetCandy.color;
         const destroySet = new Set();
@@ -454,11 +454,11 @@ class Match3Scene extends Phaser.Scene {
             const x = BOARD_OFFSET_X + candy.c * TILE_SIZE + TILE_SIZE / 2;
             const y = BOARD_OFFSET_Y + candy.r * TILE_SIZE + TILE_SIZE / 2;
 
-            this.emitter.emitParticleAt(x, y, 10);
+            this.emitter.emitParticleAt(x, y, 6);
             sfx.playPop();
 
             this.tweens.add({
-                targets: candy.sprite, scaleX: 0, scaleY: 0, alpha: 0, duration: 220,
+                targets: candy.sprite, scaleX: 0, scaleY: 0, alpha: 0, duration: 200,
                 onComplete: () => {
                     candy.sprite.destroy();
                     this.board[candy.r][candy.c] = null;
@@ -467,7 +467,7 @@ class Match3Scene extends Phaser.Scene {
                         specialsToCreate.forEach(sp => {
                             this.spawnCandy(sp.tile.r, sp.tile.c, sp.color, sp.type);
                         });
-                        this.time.delayedCall(120, () => this.fallAndRefill());
+                        this.time.delayedCall(100, () => this.fallAndRefill());
                     }
                 }
             });
@@ -492,7 +492,7 @@ class Match3Scene extends Phaser.Scene {
                     const targetY = BOARD_OFFSET_Y + newR * TILE_SIZE + TILE_SIZE / 2;
                     maxFalls = Math.max(maxFalls, emptySpaces);
 
-                    this.tweens.add({ targets: candy.sprite, y: targetY, duration: 200 + emptySpaces * 35, ease: 'Power2' });
+                    this.tweens.add({ targets: candy.sprite, y: targetY, duration: 180 + emptySpaces * 30, ease: 'Power2' });
                 }
             }
 
@@ -503,7 +503,7 @@ class Match3Scene extends Phaser.Scene {
             }
         }
 
-        this.time.delayedCall(300 + maxFalls * 35, () => {
+        this.time.delayedCall(250 + maxFalls * 30, () => {
             const cascadeMatches = this.getMatches();
             if (cascadeMatches.length > 0) {
                 this.processMatches(cascadeMatches);
@@ -516,14 +516,21 @@ class Match3Scene extends Phaser.Scene {
 
     showFloatingText(msg, x, y) {
         const txt = this.add.text(x, y, msg, {
-            fontFamily: 'Outfit', fontSize: '36px', fontWeight: '800', color: '#ffd700',
-            stroke: '#ff2a75', strokeThickness: 6
+            fontFamily: 'Outfit', fontSize: '32px', fontWeight: '800', color: '#ffd700',
+            stroke: '#ff2a75', strokeThickness: 5
         }).setOrigin(0.5);
 
         this.tweens.add({
-            targets: txt, y: y - 80, alpha: 0, duration: 1000, ease: 'Power1',
+            targets: txt, y: y - 60, alpha: 0, duration: 900, ease: 'Power1',
             onComplete: () => txt.destroy()
         });
+    }
+
+    calcularEstrellas(score, target) {
+        if (score >= target * 1.6) return 3;
+        if (score >= target * 1.3) return 2;
+        if (score >= target) return 1;
+        return 0;
     }
 
     checkGameStatus() {
@@ -533,18 +540,14 @@ class Match3Scene extends Phaser.Scene {
             this.gameOver = true;
             this.canMove = false;
 
-            const gano = this.score >= this.targetScore;
-            let estrellas = 0;
+            const estrellas = this.calcularEstrellas(this.score, this.targetScore);
+            const gano = estrellas >= 1;
 
             if (gano) {
                 sfx.playWin();
-                estrellas = 1;
-                if (this.score >= this.targetScore * 1.3) estrellas = 2;
-                if (this.score >= this.targetScore * 1.6) estrellas = 3;
-
                 if (nivelActual === nivelMaximo && nivelMaximo < TOTAL_NIVELES) {
                     nivelMaximo++;
-                    localStorage.setItem('mamita_nivel_maximo', nivelMaximo);
+                    localStorage.setItem('candy_nivel_maximo', nivelMaximo);
                 }
             }
 
@@ -558,15 +561,15 @@ class Match3Scene extends Phaser.Scene {
         const scoreTxt = document.getElementById('modal-score');
         const actionBtn = document.getElementById('modal-action-btn');
 
-        title.innerText = gano ? '¡INCREMENTANTE, MAMÁ!' : '¡CASI LO LOGRAS!';
+        title.innerText = gano ? '¡MUY BIEN!' : '¡CASI!';
         title.style.color = gano ? 'var(--accent-gold)' : 'var(--accent-pink)';
-        scoreTxt.innerText = `Lograste ${this.score} de ${this.targetScore} pts`;
+        scoreTxt.innerText = `Puntos: ${this.score}`;
 
         [1, 2, 3].forEach(i => {
             const starEl = document.getElementById(`star${i}`);
             starEl.classList.remove('active');
             if (i <= estrellas) {
-                setTimeout(() => starEl.classList.add('active'), i * 250);
+                setTimeout(() => starEl.classList.add('active'), i * 200);
             }
         });
 
@@ -578,7 +581,7 @@ class Match3Scene extends Phaser.Scene {
                 else volverAlMapa();
             };
         } else {
-            actionBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Intentar otra vez';
+            actionBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Jugar de nuevo';
             actionBtn.onclick = () => {
                 modal.classList.remove('active');
                 iniciarNivel(nivelActual);
@@ -596,18 +599,15 @@ class Match3Scene extends Phaser.Scene {
         const pct = Math.min(100, Math.max(0, (this.score / maxBarScore) * 100));
         document.getElementById('progress-fill').style.width = `${pct}%`;
 
+        const estrellas = this.calcularEstrellas(this.score, this.targetScore);
+        
         const s1 = document.getElementById('m-star-1');
         const s2 = document.getElementById('m-star-2');
         const s3 = document.getElementById('m-star-3');
 
-        if (this.score >= this.targetScore) s1.classList.add('reached');
-        else s1.classList.remove('reached');
-
-        if (this.score >= this.targetScore * 1.3) s2.classList.add('reached');
-        else s2.classList.remove('reached');
-
-        if (this.score >= this.targetScore * 1.6) s3.classList.add('reached');
-        else s3.classList.remove('reached');
+        if (estrellas >= 1) s1.classList.add('reached'); else s1.classList.remove('reached');
+        if (estrellas >= 2) s2.classList.add('reached'); else s2.classList.remove('reached');
+        if (estrellas >= 3) s3.classList.add('reached'); else s3.classList.remove('reached');
     }
 }
 
@@ -616,7 +616,7 @@ const phaserConfig = {
     width: 640,
     height: 640,
     parent: 'game-container',
-    backgroundColor: '#130a2a',
+    backgroundColor: '#180b30',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -624,5 +624,5 @@ const phaserConfig = {
     scene: Match3Scene
 };
 
-// Carga del Mapa al Inicio
+// Carga inicial
 renderizarMapa();

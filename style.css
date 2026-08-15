@@ -1,11 +1,10 @@
 :root {
-    --bg-main: #130a2a;
+    --bg-main: #180b30;
     --panel-bg: rgba(255, 255, 255, 0.12);
     --panel-border: rgba(255, 255, 255, 0.25);
     --accent-pink: #ff2a75;
     --accent-gold: #ffd700;
     --accent-cyan: #00f0ff;
-    --accent-purple: #9d4edd;
     --text-white: #ffffff;
 }
 
@@ -21,9 +20,8 @@
 body {
     background-color: var(--bg-main);
     background-image: 
-        radial-gradient(circle at 20% 20%, rgba(255, 42, 117, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.2) 0%, transparent 60%);
+        radial-gradient(circle at 50% 20%, rgba(255, 42, 117, 0.25) 0%, transparent 60%),
+        radial-gradient(circle at 50% 80%, rgba(0, 240, 255, 0.2) 0%, transparent 60%);
     font-family: 'Fredoka', sans-serif;
     color: var(--text-white);
     min-height: 100vh;
@@ -56,7 +54,7 @@ body {
     border-radius: 36px;
     padding: 24px 16px;
     width: 100%;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
 .map-header {
@@ -65,20 +63,16 @@ body {
 
 .map-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 34px;
+    font-size: 32px;
     font-weight: 800;
-    background: linear-gradient(135deg, #ff758c, #ffc83b, #7afcff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    filter: drop-shadow(0 4px 10px rgba(255, 42, 117, 0.4));
+    color: var(--accent-gold);
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .map-subtitle {
     font-size: 18px;
     font-weight: 600;
-    color: var(--accent-gold);
+    color: #ffffff;
     margin-top: 4px;
 }
 
@@ -87,7 +81,7 @@ body {
     flex-direction: column-reverse;
     gap: 20px;
     width: 100%;
-    max-height: 60vh;
+    max-height: 55vh;
     overflow-y: auto;
     padding: 20px 10px;
     background: rgba(0, 0, 0, 0.35);
@@ -105,31 +99,25 @@ body {
 .level-row:nth-child(3n+3) { justify-content: flex-end; padding-right: 20px; }
 
 .level-btn {
-    width: 80px;
-    height: 80px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
     border: 4px solid #ffffff;
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 800;
     font-family: 'Outfit', sans-serif;
     color: white;
     cursor: pointer;
-    box-shadow: 0 8px 0 rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.3);
-    transition: transform 0.15s ease, background 0.3s ease;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.4);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.level-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
-}
-
 .level-btn.locked {
     background: #3a3a58;
     border-color: #666;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .level-btn.completed {
@@ -143,13 +131,13 @@ body {
 
 @keyframes pulseGlow {
     0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 42, 117, 0.8), 0 8px 0 rgba(0,0,0,0.4); }
-    100% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 42, 117, 1), 0 8px 0 rgba(0,0,0,0.4); }
+    100% { transform: scale(1.08); box-shadow: 0 0 25px rgba(255, 42, 117, 1), 0 8px 0 rgba(0,0,0,0.4); }
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     border: 1px solid var(--panel-border);
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
     padding: 12px 20px;
     border-radius: 20px;
     font-size: 16px;
@@ -227,7 +215,7 @@ body {
 
 .stat-value {
     font-family: 'Outfit', sans-serif;
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 800;
     color: #ffffff;
 }
@@ -237,9 +225,9 @@ body {
     position: relative;
     width: 100%;
     height: 22px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.25);
 }
 
 .progress-bar-fill {
@@ -254,19 +242,19 @@ body {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 22px;
-    color: #555577;
+    font-size: 20px;
+    color: #444466;
     transition: all 0.3s;
 }
 
-.star-milestone.star-1 { left: 33%; }
-.star-milestone.star-2 { left: 66%; }
+.star-milestone.star-1 { left: 62.5%; }
+.star-milestone.star-2 { left: 81.25%; }
 .star-milestone.star-3 { left: 100%; }
 
 .star-milestone.reached {
     color: var(--accent-gold);
     transform: translate(-50%, -50%) scale(1.3);
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.9));
 }
 
 #game-container {
@@ -285,7 +273,7 @@ body {
     height: auto !important;
 }
 
-/* MODAL DE VICTORIA/DERROTA */
+/* MODAL DE RESULTADO */
 .modal-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -313,11 +301,11 @@ body {
     align-items: center;
     gap: 16px;
     width: 100%;
-    box-shadow: 0 0 40px rgba(255, 42, 117, 0.6);
+    box-shadow: 0 0 40px rgba(255, 42, 117, 0.5);
 }
 
 .modal-title { 
-    font-size: 34px; 
+    font-size: 32px; 
     font-family: 'Outfit', sans-serif; 
     font-weight: 800; 
 }
@@ -330,7 +318,7 @@ body {
 }
 .star-icon.active {
     color: var(--accent-gold);
-    transform: scale(1.25) rotate(8deg);
+    transform: scale(1.2) rotate(6deg);
     filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
 }
 

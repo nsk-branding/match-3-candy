@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Candy Blast para Mamá</title>
+    <title>Juego de Caramelos</title>
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
@@ -16,14 +16,14 @@
     <!-- PANTALLA 1: MAPA DE INICIO -->
     <div id="map-screen" class="screen map-wrapper active">
         <div class="map-header">
-            <h1 class="map-title"><i class="fa-solid fa-crown"></i> CANDY MAMÁ</h1>
-            <p id="status-text" class="map-subtitle">¡Elige un nivel para jugar!</p>
+            <h1 class="map-title"><i class="fa-solid fa-star"></i> NIVELES</h1>
+            <p id="status-text" class="map-subtitle">Elige un nivel para jugar</p>
         </div>
         
         <div id="map" class="map-container"></div>
 
         <button class="btn-secondary" onclick="reiniciarProgreso()">
-            <i class="fa-solid fa-rotate-left"></i> Reiniciar Progreso
+            <i class="fa-solid fa-rotate-left"></i> Volver al Nivel 1
         </button>
     </div>
 
@@ -49,7 +49,7 @@
                 </div>
                 <div class="stat-box">
                     <span class="stat-label"><i class="fa-solid fa-hourglass-half" style="color: var(--accent-cyan);"></i> TURNOS</span>
-                    <span class="stat-value" id="moves-val">15</span>
+                    <span class="stat-value" id="moves-val">20</span>
                 </div>
             </div>
         </div>
@@ -58,7 +58,7 @@
         <div id="game-container">
             <div id="result-modal" class="modal-overlay">
                 <div class="modal-card">
-                    <h2 id="modal-status" class="modal-title">¡INCREÍBLE!</h2>
+                    <h2 id="modal-status" class="modal-title">¡MUY BIEN!</h2>
                     
                     <div class="stars-container">
                         <i class="fa-solid fa-star star-icon" id="star1"></i>
@@ -66,7 +66,7 @@
                         <i class="fa-solid fa-star star-icon" id="star3"></i>
                     </div>
 
-                    <p id="modal-score" style="font-size: 22px; font-weight: 600;">Puntos: 0</p>
+                    <p id="modal-score" style="font-size: 20px; font-weight: 600;"></p>
 
                     <button class="btn-primary" id="modal-action-btn"></button>
                 </div>
@@ -74,7 +74,7 @@
         </div>
 
         <button class="btn-secondary" id="back-to-map-btn" style="width: 100%; margin-top: 4px;">
-            <i class="fa-solid fa-map-location-dot"></i> Volver al Mapa
+            <i class="fa-solid fa-arrow-left"></i> Volver a Niveles
         </button>
     </div>
 
