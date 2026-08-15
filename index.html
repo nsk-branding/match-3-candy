@@ -7,20 +7,23 @@
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
-    <!-- Phaser 3 CDN -->
+    <!-- Phaser 3 & Canvas Confetti CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- PANTALLA 1: MAPA DE INICIO -->
+    <!-- PANTALLA 1: MAPA DE INICIO CON AVATAR -->
     <div id="map-screen" class="screen map-wrapper active">
         <div class="map-header">
             <h1 class="map-title"><i class="fa-solid fa-star"></i> NIVELES</h1>
             <p id="status-text" class="map-subtitle">Elige un nivel para jugar</p>
         </div>
         
-        <div id="map" class="map-container"></div>
+        <div id="map" class="map-container">
+            <div id="player-avatar"><i class="fa-solid fa-face-smile"></i></div>
+        </div>
 
         <button class="btn-secondary" onclick="reiniciarProgreso()">
             <i class="fa-solid fa-rotate-left"></i> Volver al Nivel 1
@@ -32,7 +35,7 @@
         <div class="hud-card">
             <div class="hud-header">
                 <span id="level-title" class="hud-title">Nivel 1</span>
-                <span id="target-text" class="hud-target">Meta: 1000 pts</span>
+                <span id="target-text" class="hud-target">Meta: 8000 pts</span>
             </div>
 
             <div class="progress-bar-container">
@@ -49,13 +52,14 @@
                 </div>
                 <div class="stat-box">
                     <span class="stat-label"><i class="fa-solid fa-hourglass-half" style="color: var(--accent-cyan);"></i> TURNOS</span>
-                    <span class="stat-value" id="moves-val">20</span>
+                    <span class="stat-value" id="moves-val">45</span>
                 </div>
             </div>
         </div>
 
         <!-- Tablero Phaser -->
         <div id="game-container">
+            <!-- Modal Normal de Resultado (Ganó / Casi) -->
             <div id="result-modal" class="modal-overlay">
                 <div class="modal-card">
                     <h2 id="modal-status" class="modal-title">¡MUY BIEN!</h2>
@@ -69,6 +73,20 @@
                     <p id="modal-score" style="font-size: 20px; font-weight: 600;"></p>
 
                     <button class="btn-primary" id="modal-action-btn"></button>
+                </div>
+            </div>
+
+            <!-- Modal de Gran Victoria Final (Al completar todos los niveles) -->
+            <div id="final-victory-modal" class="modal-overlay">
+                <div class="modal-card final-victory-card">
+                    <i class="fa-solid fa-trophy trophy-icon"></i>
+                    <h2 class="modal-title" style="color: var(--accent-gold);">¡FELICIDADES!</h2>
+                    <p style="font-size: 22px; font-weight: 700; color: #ffffff;">¡Completaste todo el juego!</p>
+                    <p style="font-size: 18px; color: rgba(255,255,255,0.9);">Eres increible, ¡lo hiciste súper bien!</p>
+                    
+                    <button class="btn-primary" onclick="volverAlMapaDesdeVictoria()" style="margin-top: 10px;">
+                        <i class="fa-solid fa-map-location-dot"></i> Volver al Mapa
+                    </button>
                 </div>
             </div>
         </div>

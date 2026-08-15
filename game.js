@@ -4,19 +4,26 @@ let nivelMaximo = parseInt(localStorage.getItem('candy_nivel_maximo')) || 1;
 let nivelActual = 1;
 let gameInstance = null;
 
+// Configuración adaptada: Metas altas de puntos y MUCHOS turnos (45 a 55) para disfrutar largo rato
 function getConfigNivel(num) {
     return {
-        movimientos: 25,
-        objetivoScore: num * 1000
+        movimientos: 45 + (num * 2), // 47, 49, 51...
+        objetivoScore: num * 8000     // 8000, 16000, 24000...
     };
 }
 
 function renderizarMapa() {
     const mapContainer = document.getElementById('map');
     const statusText = document.getElementById('status-text');
+    const avatar = document.getElementById('player-avatar');
+    
+    // Guardar referencia al avatar antes de limpiar el contenedor
     mapContainer.innerHTML = '';
+    mapContainer.appendChild(avatar);
 
     statusText.innerText = `Nivel actual: ${nivelMaximo}`;
+
+    let currentBtnElement = null;
 
     for (let i = 1; i <= TOTAL_NIVELES; i++) {
         const row = document.createElement('div');
@@ -25,6 +32,7 @@ function renderizarMapa() {
         const btn = document.createElement('button');
         btn.className = 'level-btn';
         btn.innerText = i;
+        btn.id = `btn-level-${i}`;
 
         if (i < nivelMaximo) {
             btn.classList.add('completed');
@@ -32,6 +40,7 @@ function renderizarMapa() {
         } else if (i === nivelMaximo) {
             btn.classList.add('current');
             btn.onclick = () => iniciarNivel(i);
+            currentBtnElement = btn;
         } else {
             btn.classList.add('locked');
             btn.innerHTML = '<i class="fa-solid fa-lock"></i>';
@@ -41,6 +50,25 @@ function renderizarMapa() {
         row.appendChild(btn);
         mapContainer.appendChild(row);
     }
+
+    // Posicionar el avatar sobre el botón del nivel activo con animación estilo Candy Crush
+    setTimeout(() => moverAvatarAButton(currentBtnElement || document.getElementById(`btn-level-1`)), 50);
+}
+
+function moverAvatarAButton(btnEl) {
+    const avatar = document.getElementById('player-avatar');
+    if (!btnEl || !avatar) return;
+
+    const mapContainer = document.getElementById('map');
+    const containerRect = mapContainer.getBoundingClientRect();
+    const btnRect = btnEl.getBoundingClientRect();
+
+    // Calcular posición dentro del scroll container del mapa
+    const topPos = (btnRect.top - containerRect.top) + mapContainer.scrollTop - 18;
+    const leftPos = (btnRect.left - containerRect.left) + (btnRect.width / 2) - 24;
+
+    avatar.style.top = `${topPos}px`;
+    avatar.style.left = `${leftPos}px`;
 }
 
 function iniciarNivel(num) {
@@ -62,6 +90,7 @@ function iniciarNivel(num) {
 
 function volverAlMapa() {
     document.getElementById('result-modal').classList.remove('active');
+    document.getElementById('final-victory-modal').classList.remove('active');
     document.getElementById('game-screen').classList.remove('active');
     document.getElementById('map-screen').classList.add('active');
     
@@ -70,6 +99,10 @@ function volverAlMapa() {
     }
     
     renderizarMapa();
+}
+
+function volverAlMapaDesdeVictoria() {
+    volverAlMapa();
 }
 
 function reiniciarProgreso() {
@@ -123,6 +156,20 @@ class SoundFX {
             osc.connect(gain); gain.connect(this.ctx.destination);
             osc.start(this.ctx.currentTime + i * 0.12);
             osc.stop(this.ctx.currentTime + i * 0.12 + 0.25);
+        });
+    }
+
+    playGrandFanfare() {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
+        notes.forEach((f, i) => {
+            const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.15);
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime + i * 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.15 + 0.4);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + i * 0.15);
+            osc.stop(this.ctx.currentTime + i * 0.15 + 0.4);
         });
     }
 }
@@ -442,7 +489,7 @@ class Match3Scene extends Phaser.Scene {
     }
 
     animateDestruction(destroySet, specialsToCreate) {
-        this.score += destroySet.size * 60;
+        this.score += destroySet.size * 120; // Puntuación multiplicada para metas más altas
         this.updateUI();
 
         let count = 0;
@@ -544,14 +591,50 @@ class Match3Scene extends Phaser.Scene {
             const gano = estrellas >= 1;
 
             if (gano) {
-                sfx.playWin();
-                if (nivelActual === nivelMaximo && nivelMaximo < TOTAL_NIVELES) {
-                    nivelMaximo++;
-                    localStorage.setItem('candy_nivel_maximo', nivelMaximo);
+                if (nivelActual === TOTAL_NIVELES) {
+                    // Completó el último nivel
+                    sfx.playGrandFanfare();
+                    this.lanzarConfetiVictoria();
+                    document.getElementById('final-victory-modal').classList.add('active');
+                } else {
+                    sfx.playWin();
+                    if (nivelActual === nivelMaximo && nivelMaximo < TOTAL_NIVELES) {
+                        nivelMaximo++;
+                        localStorage.setItem('candy_nivel_maximo', nivelMaximo);
+                    }
+                    this.mostrarModalResultado(gano, estrellas);
                 }
+            } else {
+                this.mostrarModalResultado(gano, estrellas);
             }
+        }
+    }
 
-            this.mostrarModalResultado(gano, estrellas);
+    lanzarConfetiVictoria() {
+        if (typeof confetti === 'function') {
+            const end = Date.now() + (3 * 1000);
+            const colors = ['#ff2a75', '#00f0ff', '#ffd700', '#00ff88'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 4,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 4,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
         }
     }
 
