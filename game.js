@@ -4,11 +4,10 @@ let nivelMaximo = parseInt(localStorage.getItem('candy_nivel_maximo')) || 1;
 let nivelActual = 1;
 let gameInstance = null;
 
-// Configuración adaptada: Metas altas de puntos y MUCHOS turnos (45 a 55) para disfrutar largo rato
 function getConfigNivel(num) {
     return {
-        movimientos: 45 + (num * 2), // 47, 49, 51...
-        objetivoScore: num * 8000     // 8000, 16000, 24000...
+        movimientos: 45 + (num * 2),
+        objetivoScore: num * 8000
     };
 }
 
@@ -17,7 +16,6 @@ function renderizarMapa() {
     const statusText = document.getElementById('status-text');
     const avatar = document.getElementById('player-avatar');
     
-    // Guardar referencia al avatar antes de limpiar el contenedor
     mapContainer.innerHTML = '';
     mapContainer.appendChild(avatar);
 
@@ -51,7 +49,6 @@ function renderizarMapa() {
         mapContainer.appendChild(row);
     }
 
-    // Posicionar el avatar sobre el botón del nivel activo con animación estilo Candy Crush
     setTimeout(() => moverAvatarAButton(currentBtnElement || document.getElementById(`btn-level-1`)), 50);
 }
 
@@ -63,7 +60,6 @@ function moverAvatarAButton(btnEl) {
     const containerRect = mapContainer.getBoundingClientRect();
     const btnRect = btnEl.getBoundingClientRect();
 
-    // Calcular posición dentro del scroll container del mapa
     const topPos = (btnRect.top - containerRect.top) + mapContainer.scrollTop - 18;
     const leftPos = (btnRect.left - containerRect.left) + (btnRect.width / 2) - 24;
 
@@ -489,13 +485,13 @@ class Match3Scene extends Phaser.Scene {
     }
 
     animateDestruction(destroySet, specialsToCreate) {
-        this.score += destroySet.size * 120; // Puntuación multiplicada para metas más altas
+        this.score += destroySet.size * 120;
         this.updateUI();
 
         let count = 0;
         const total = destroySet.size;
 
-        if (total === 0) { this.fallAndRefill(); return; }
+        if (total === 0) { this.fallAndRefill(specialsToCreate.length > 0); return; }
 
         destroySet.forEach(candy => {
             const x = BOARD_OFFSET_X + candy.c * TILE_SIZE + TILE_SIZE / 2;
@@ -514,14 +510,14 @@ class Match3Scene extends Phaser.Scene {
                         specialsToCreate.forEach(sp => {
                             this.spawnCandy(sp.tile.r, sp.tile.c, sp.color, sp.type);
                         });
-                        this.time.delayedCall(100, () => this.fallAndRefill());
+                        this.time.delayedCall(100, () => this.fallAndRefill(specialsToCreate.length > 0));
                     }
                 }
             });
         });
     }
 
-    fallAndRefill() {
+    fallAndRefill(createdSpecial = false) {
         let maxFalls = 0;
 
         for (let c = 0; c < GRID_SIZE; c++) {
@@ -551,6 +547,14 @@ class Match3Scene extends Phaser.Scene {
         }
 
         this.time.delayedCall(250 + maxFalls * 30, () => {
+            // SI SE CREÓ UN SUPER CARAMELO, NO ACTIVAMOS CASCADA AUTOMÁTICA
+            // Para que el jugador pueda disfrutarlo y activarlo él mismo.
+            if (createdSpecial) {
+                this.canMove = true;
+                this.checkGameStatus();
+                return;
+            }
+
             const cascadeMatches = this.getMatches();
             if (cascadeMatches.length > 0) {
                 this.processMatches(cascadeMatches);
@@ -592,7 +596,6 @@ class Match3Scene extends Phaser.Scene {
 
             if (gano) {
                 if (nivelActual === TOTAL_NIVELES) {
-                    // Completó el último nivel
                     sfx.playGrandFanfare();
                     this.lanzarConfetiVictoria();
                     document.getElementById('final-victory-modal').classList.add('active');
@@ -616,20 +619,8 @@ class Match3Scene extends Phaser.Scene {
             const colors = ['#ff2a75', '#00f0ff', '#ffd700', '#00ff88'];
 
             (function frame() {
-                confetti({
-                    particleCount: 4,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: colors
-                });
-                confetti({
-                    particleCount: 4,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: colors
-                });
+                confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
+                confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
 
                 if (Date.now() < end) {
                     requestAnimationFrame(frame);
